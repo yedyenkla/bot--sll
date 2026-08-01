@@ -15,7 +15,7 @@ from threading import Thread
 # --- CẤU HÌNH BOT & WEB ---
 TOKEN = "8978355103:AAHuIzc1USzlFDLolFRIsRMFKL6r6CCck5w"
 ADMIN_IDS = [8455715505]  
-ADMIN_PASSWORD = "admin_password_cua_ban"  
+ADMIN_PASSWORD = "Bxt223344@"  
 SECRET_KEY = "khoa_bi_mat_flask_session"     
 
 # --- KHỞI TẠO DATABASE ---
