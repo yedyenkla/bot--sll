@@ -14,9 +14,9 @@ from threading import Thread
 
 # --- CẤU HÌNH BOT & WEB ---
 TOKEN = "8978355103:AAHuIzc1USzlFDLolFRIsRMFKL6r6CCck5w"
-ADMIN_IDS = [8455715505]  # Thay bằng Telegram ID của Admin
-ADMIN_PASSWORD = "Bxt223344@"  # Mật khẩu đăng nhập trang web quản lý
-SECRET_KEY = "Bxt223344@"     # Khóa mã hóa session web
+ADMIN_IDS = [8455715505]  
+ADMIN_PASSWORD = "admin_password_cua_ban"  
+SECRET_KEY = "khoa_bi_mat_flask_session"     
 
 # --- KHỞI TẠO DATABASE ---
 def init_db():
@@ -50,7 +50,6 @@ def get_stats():
     sold = cursor.fetchone()[0]
     conn.close()
     return unimported, imported, sold
-
 
 # --- GIAO DIỆN WEB QUẢN LÝ KHO (FLASK) ---
 app = Flask(__name__)
@@ -143,7 +142,6 @@ def add_accounts():
     return redirect(url_for('index'))
 
 def run_web():
-    # Tự động nhận port từ Render (hoặc chạy port 10000 nếu chạy ở máy local)
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
 
@@ -151,7 +149,6 @@ def keep_alive():
     t = Thread(target=run_web)
     t.daemon = True
     t.start()
-
 
 # --- PHẦN BOT TELEGRAM ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -251,52 +248,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [[InlineKeyboardButton("🔙 Quay lại menu chính", callback_data="back_home")]]
         await query.message.reply_text(f"🛒 **Danh sách tài khoản bán (SL: {len(acc_texts)} - Chạm vào đoạn mã dưới để copy):**\n\n```{result_str}```", parse_mode="Markdown", reply_markup=InlineKeyboardMarkup(keyboard))
 
-async def daily_backup_job(context: ContextTypes.DEFAULT_TYPE):
-    conn = sqlite3.connect("accounts_manager.db", check_same_thread=False)
-    cursor = conn.cursor()
-    cursor.execute("SELECT account_data FROM accounts WHERE status = 0")
-    unimported = cursor.fetchall()
-    cursor.execute("SELECT account_data FROM accounts WHERE status = 1")
-    imported_unprocessed = cursor.fetchall()
-    conn.close()
-
-    file_path = "backup_kho_acc.txt"
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write("=== ACC CHƯA NHẬP MÃ ===\n")
-        for row in unimported:
-            f.write(row[0] + "\n")
-        f.write("\n=== ACC ĐÃ NHẬP MÃ (CHƯA BÁN) ===\n")
-        for row in imported_unprocessed:
-            f.write(row[0] + "\n")
-
-    for admin_id in ADMIN_IDS:
-        try:
-            with open(file_path, "rb") as f:
-                await context.bot.send_document(
-                    chat_id=admin_id,
-                    document=f,
-                    filename=f"backup_{datetime.now().strftime('%Y-%m-%d')}.txt",
-                    caption="📂 **Báo cáo kho tự động lúc 00:00**",
-                    parse_mode="Markdown",
-                )
-        except Exception as e:
-            print(f"Lỗi gửi file backup: {e}")
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
 def main():
-    keep_alive()  # Khởi chạy trang web quản lý chạy ngầm cùng bot
+    keep_alive()  
     application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
-
-    job_queue = application.job_queue
-    vn_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-    job_queue.run_daily(
-        daily_backup_job,
-        time=datetime.now(vn_tz).replace(hour=0, minute=0, second=0, microsecond=0).time(),
-        days=(0, 1, 2, 3, 4, 5, 6),
-    )
 
     print("🤖 Bot và Trang Web Quản Lý đang chạy đồng thời...")
     application.run_polling()
