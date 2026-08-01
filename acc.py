@@ -16,7 +16,7 @@ from threading import Thread
 TOKEN = "8978355103:AAHuIzc1USzlFDLolFRIsRMFKL6r6CCck5w"
 ADMIN_IDS = [8455715505]  # Thay bằng Telegram ID của Admin
 ADMIN_PASSWORD = "Bxt223344@"  # Mật khẩu đăng nhập trang web quản lý
-SECRET_KEY = "Bxt22334455@"     # Khóa mã hóa session web
+SECRET_KEY = "Bxt223344@"     # Khóa mã hóa session web
 
 # --- KHỞI TẠO DATABASE ---
 def init_db():
@@ -137,13 +137,15 @@ def add_accounts():
                 cursor.execute("INSERT INTO accounts (account_data, status) VALUES (?, 0)", (acc,))
                 count += 1
             except sqlite3.IntegrityError:
-                pass # Bỏ qua nếu bị trùng lặp tài khoản
+                pass 
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
 
 def run_web():
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+    # Tự động nhận port từ Render (hoặc chạy port 10000 nếu chạy ở máy local)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
 
 def keep_alive():
     t = Thread(target=run_web)
