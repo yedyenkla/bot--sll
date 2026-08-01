@@ -558,7 +558,7 @@ def keep_alive():
     t.daemon = True
     t.start()
 
-# --- BOT TELEGRAM (GIỮ NGUYÊN 100%) ---
+# --- BOT TELEGRAM ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     keyboard = [
